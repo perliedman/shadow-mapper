@@ -5,9 +5,13 @@ import numpy
 from srtm import VFPTile
 from PIL import Image, ImageDraw
 import json
+import pickle
 
-class HeightMap(object):
+class Map(object):
     def __init__(self, lat, lng, resolution, size, proj):
+        self.lat = lat
+        self.lng = lng
+        self.resolution = resolution
         self.size = size
         self.psize = size * resolution
         self.proj = proj
@@ -24,18 +28,29 @@ class HeightMap(object):
         e, n = proj(self.bounds[2], self.bounds[3], inverse=True)
 
         self.ll_bounds = (s, w, n, e)
-        self.heights = numpy.zeros((size, size), dtype=float)
-
-    def to_image(self):
-        data = self.heights
-        rescaled = (255.0 / data.max() * (data - data.min())).astype(numpy.uint8)
-        return Image.fromarray(rescaled)
 
     def _latLngToIndex(self, lat, lng):
         x, y = self.proj(lng, lat)
         return (
             (x - self.bounds[0]) / self.psize * self.size,
             (y - self.bounds[1]) / self.psize * self.size)
+
+    def save(self, f):
+        pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
+
+    @staticmethod
+    def load(f):
+        return pickle.load(f)
+
+class HeightMap(Map):
+    def __init__(self, lat, lng, resolution, size, proj):
+        Map.__init__(self, lat, lng, resolution, size, proj)
+        self.heights = numpy.zeros((size, size), dtype=float)
+
+    def to_image(self):
+        data = self.heights
+        rescaled = (255.0 / data.max() * (data - data.min())).astype(numpy.uint8)
+        return Image.fromarray(rescaled).transpose(Image.FLIP_TOP_BOTTOM)
 
 class OSMHeightMap(HeightMap):
     def __init__(self, lat, lng, resolution, size, proj, f):
@@ -101,4 +116,6 @@ if __name__ == '__main__':
     hm = HeightMap(lat, lng, resolution, size, proj)
     hm.heights = elev.heights + buildings.heights
 
-    hm.to_image().transpose(Image.FLIP_TOP_BOTTOM).save('a.png')
+    hm.to_image().save('a.png')
+    with open('a.pickle', 'wb') as f:
+        hm.save(f)
