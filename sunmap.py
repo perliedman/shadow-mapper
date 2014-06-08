@@ -3,6 +3,12 @@ from heightmap import Map
 from PIL import Image
 import numpy
 from math import sqrt
+from sys import stdout
+
+def update_progress(progress):
+    progress = int(progress * 100)
+    print '\r[{0:<10}] {1}%'.format('='*(progress/10), progress),
+    stdout.flush()
 
 class SunMap(Map):
     def __init__(self, lat, lng, resolution, size, proj, sun_x, sun_y, sun_z, heightmap, view_alt):
@@ -16,9 +22,9 @@ class SunMap(Map):
         self.min_height = numpy.amin(self.heightmap.heights)
 
     def render(self):
-        result = numpy.zeros((self.size, self.size))
+        result = numpy.zeros((self.size, self.size), numpy.bool_)
         for y in xrange(0, self.size):
-            print y
+            update_progress(y / float(self.size))
             for x in xrange(0, self.size):
                 result[y, x] = 1 if self.is_lit(x, y) else 0
 
@@ -35,6 +41,11 @@ class SunMap(Map):
         z = self.heightmap.heights[y0, x0] + self.view_alt
         zv = self.sun_z / sqrt(self.sun_x * self.sun_x + self.sun_y * self.sun_y)
 
+        # Following is a Bresenham's algorithm line tracing.
+        # This avoids performing lots of float calculations in
+        # favor or integers, which is at least 10x faster.
+        # Basic implementation taken from
+        # http://stackoverflow.com/questions/2734714/modifying-bresenhams-line-algorithm
         steep = abs(y1 - y0) > abs(x1 - x0)
         if steep:
             x0, y0 = y0, x0
