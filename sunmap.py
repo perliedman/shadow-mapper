@@ -2,6 +2,7 @@
 from heightmap import Map
 from PIL import Image
 import numpy
+from math import sqrt
 
 class SunMap(Map):
     def __init__(self, lat, lng, resolution, size, proj, sun_x, sun_y, sun_z, heightmap, view_alt):
@@ -28,18 +29,43 @@ class SunMap(Map):
         rescaled = (255.0 / data.max() * (data - data.min())).astype(numpy.uint8)
         return Image.fromarray(rescaled).transpose(Image.FLIP_TOP_BOTTOM)
 
-    def is_lit(self, x, y):
-        z = self.heightmap.heights[y, x] + self.view_alt
+    def is_lit(self, x0, y0):
+        x1 = x0 + self.sun_x * self.size
+        y1 = y0 + self.sun_y * self.size
+        z = self.heightmap.heights[y0, x0] + self.view_alt
+        zv = self.sun_z / sqrt(self.sun_x * self.sun_x + self.sun_y * self.sun_y)
+
+        steep = abs(y1 - y0) > abs(x1 - x0)
+        if steep:
+            x0, y0 = y0, x0
+            x1, y1 = y1, x1
+
+        if y0 < y1:
+            ystep = 1
+        else:
+            ystep = -1
+
+        deltax = x1 - x0
+        deltay = abs(y1 - y0)
+        error = -deltax / 2
+        y = y0
+
+        xdir = 1 if x0 < x1 else -1
+        x = x0
         while x > 0 and x < self.size and y > 0 and \
             y < self.size and z > self.min_height and z < self.max_height:
-            if z < self.heightmap.heights[y, x]:
+            if (steep and self.heightmap.heights[x, y] > z) or \
+                (not steep and self.heightmap.heights[y, x] > z):
                 return False
 
-            x += self.sun_x
-            y += self.sun_y
-            z += self.sun_z
+            error = error + deltay
+            if error > 0:
+                y = y + ystep
+                error = error - deltax
 
-        #print x, y, z
+            x += xdir
+            z += zv
+
         return True
 
 if __name__ == '__main__':
