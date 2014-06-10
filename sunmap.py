@@ -2,7 +2,7 @@
 from heightmap import Map
 from PIL import Image
 import numpy
-from math import sqrt
+from math import sqrt, atan2
 from sys import stdout
 
 def update_progress(progress):
@@ -56,7 +56,7 @@ class SunMap(Map):
         else:
             ystep = -1
 
-        deltax = x1 - x0
+        deltax = abs(x1 - x0)
         deltay = abs(y1 - y0)
         error = -deltax / 2
         y = y0
@@ -79,6 +79,12 @@ class SunMap(Map):
 
         return True
 
+def get_projection_north_deviation(proj, lat, lng):
+    x1, y1 = proj(lng, lat - 0.2)
+    x2, y2 = proj(lng, lat + 0.2)
+
+    return atan2(x2-x1, y2-y1)
+
 if __name__ == '__main__':
     from sys import argv
     from datetime import datetime
@@ -91,8 +97,9 @@ if __name__ == '__main__':
 
     t = datetime.strptime(argv[1], '%Y-%m-%d %H:%M')
     sunpos = solar_position(t, float(argv[2]), float(argv[3]))
-    sun_x = sin(sunpos['azimuth']) * cos(sunpos['altitude'])
-    sun_y = -cos(sunpos['azimuth']) * cos(sunpos['altitude'])
+    dev = get_projection_north_deviation(hm.proj, hm.lat, hm.lng)
+    sun_x = sin(sunpos['azimuth'] - dev) * cos(sunpos['altitude'])
+    sun_y = -cos(sunpos['azimuth'] - dev) * cos(sunpos['altitude'])
     sun_z = sin(sunpos['altitude'])
 
     sm = SunMap(hm.lat, hm.lng, hm.resolution, hm.size, hm.proj, sun_x, sun_y, sun_z, hm, 1.5)
