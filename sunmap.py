@@ -92,15 +92,15 @@ if __name__ == '__main__':
     from suncalc import solar_position
     from math import sin, cos
 
-    with open('a.pickle', 'rb') as f:
+    with open(argv[1], 'rb') as f:
         hm = HeightMap.load(f)
 
-    t = datetime.strptime(argv[1], '%Y-%m-%d %H:%M')
-    sunpos = solar_position(t, float(argv[2]), float(argv[3]))
+    t = datetime.strptime(argv[2], '%Y-%m-%d %H:%M')
+    sunpos = solar_position(t, hm.lat, hm.lng)
     dev = get_projection_north_deviation(hm.proj, hm.lat, hm.lng)
-    sun_x = sin(sunpos['azimuth'] - dev) * cos(sunpos['altitude'])
+    sun_x = -sin(sunpos['azimuth'] - dev) * cos(sunpos['altitude'])
     sun_y = -cos(sunpos['azimuth'] - dev) * cos(sunpos['altitude'])
     sun_z = sin(sunpos['altitude'])
 
     sm = SunMap(hm.lat, hm.lng, hm.resolution, hm.size, hm.proj, sun_x, sun_y, sun_z, hm, 1.5)
-    sm.to_image().save('b.png')
+    sm.to_image().save(argv[3])
