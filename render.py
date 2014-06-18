@@ -7,7 +7,7 @@ from suncalc import solar_position
 from sunmap import SunMap, get_projection_north_deviation
 from math import sin, cos
 from os import path
-from PIL import Image, ImageChops
+from PIL import Image, ImageChops, ImageDraw
 
 with open(argv[1], 'rb') as f:
     hm = HeightMap.load(f)
@@ -37,6 +37,11 @@ while t <= t2:
         img = img.convert('RGB')
         img = Image.eval(img, lambda x: x + transparency)
         img = ImageChops.multiply(img, bkg)
+
+    draw = ImageDraw.ImageDraw(img)
+    text = t.strftime('%Y-%m-%d %H:%M')
+    txtsize = draw.textsize(text)
+    draw.text((hm.size - txtsize[0] - 5, hm.size - txtsize[1] - 5), text, (0,0,0))
 
     img.save(path.join(argv[5], t.strftime('%Y-%m-%d_%H%M.png')))
 
