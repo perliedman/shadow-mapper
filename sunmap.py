@@ -4,6 +4,7 @@ from PIL import Image
 import numpy
 from math import sqrt, atan2
 from sys import stdout
+import shadowmap
 
 def update_progress(progress):
     progress = int(progress * 100)
@@ -22,13 +23,7 @@ class SunMap(Map):
         self.min_height = numpy.amin(self.heightmap.heights)
 
     def render(self):
-        result = numpy.zeros((self.size, self.size), numpy.bool_)
-        for y in xrange(0, self.size):
-            update_progress(y / float(self.size))
-            for x in xrange(0, self.size):
-                result[y, x] = 1 if self.is_lit(x, y) else 0
-
-        return result
+        return shadowmap.calculate(self.heightmap.heights, self.sun_x, self.sun_y, self.sun_z, self.view_alt)
 
     def to_image(self):
         data = self.render()
