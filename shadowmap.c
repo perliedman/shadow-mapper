@@ -47,13 +47,13 @@ static double **pymatrix_to_Carrayptrs(PyArrayObject *arrayin)  {
 
 static PyObject *shadowmap_calculate(PyObject *self, PyObject *args) {
     PyArrayObject *heightmap_arr, *shadowmap_arr;
-    double sun_x, sun_y, sun_z, view_alt, x, y, z;
+    double sun_x, sun_y, sun_z, view_alt, z_max, x, y, z;
     double **shadowmap, **heightmap;
     npy_intp *dims;
     int i, j, lit;
 
-    if (!PyArg_ParseTuple(args, "O!dddd", &PyArray_Type, &heightmap_arr,
-        &sun_x, &sun_y, &sun_z, &view_alt)) {
+    if (!PyArg_ParseTuple(args, "O!ddddd", &PyArray_Type, &heightmap_arr,
+        &sun_x, &sun_y, &sun_z, &view_alt, &z_max)) {
         return NULL;
     }
 
@@ -74,9 +74,7 @@ static PyObject *shadowmap_calculate(PyObject *self, PyObject *args) {
             z = heightmap[i][j] + view_alt;
             lit = 1;
 
-            // TODO: should also include  z exceeding heightmap's max value
-            // as an exit condition as an optimization
-            while (x >= 0 && x < dims[0] && y >= 0 && y < dims[1]) {
+            while (x >= 0 && x < dims[0] && y >= 0 && y < dims[1] && z <= z_max) {
                 if (z < heightmap[(int)y][(int)x]) {
                     lit = 0;
                     break;

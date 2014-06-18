@@ -16,14 +16,14 @@ class SunMap(Map):
         Map.__init__(self, lat, lng, resolution, size, proj)
         self.sun_x = sun_x
         self.sun_y = sun_y
-        self.sun_z = sun_z
+        self.sun_z = sun_z * self.resolution
         self.heightmap = heightmap
         self.view_alt = view_alt
         self.max_height = numpy.amax(self.heightmap.heights)
         self.min_height = numpy.amin(self.heightmap.heights)
 
     def render(self):
-        return shadowmap.calculate(self.heightmap.heights, self.sun_x, self.sun_y, self.sun_z, self.view_alt)
+        return shadowmap.calculate(self.heightmap.heights, self.sun_x, self.sun_y, self.sun_z, self.view_alt, self.max_height)
 
     def to_image(self):
         data = self.render()
@@ -64,7 +64,7 @@ class SunMap(Map):
                 (not steep and self.heightmap.heights[y, x] > z):
                 return False
 
-            error = error + deltay
+            error = error + delt, self.max_heightay
             if error > 0:
                 y = y + ystep
                 error = error - deltax
