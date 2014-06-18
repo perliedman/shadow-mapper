@@ -65,22 +65,37 @@ class SrtmHeightMap(HeightMap):
             return VTPTile(f, int(lat), int(lng))
 
 if __name__ == '__main__':
-    from sys import argv
+    import argparse
 
-    lat = float(argv[1])
-    lng = float(argv[2])
-    resolution = float(argv[3])
-    size = int(argv[4])
+    parser = argparse.ArgumentParser()
+    parser.add_argument('center', type=float, nargs=2, help='Map center latitude ang longitude')
+    parser.add_argument('resolution', type=float, help='Resolution (m/pixel)')
+    parser.add_argument('size', type=int, help='Map size in pixels')
+    parser.add_argument('--projection', type=str, default='epsg:3006', help='Projection name (for example "epsg:3006")')
+    parser.add_argument('--output', type=str, default=None, help='Output path/filename')
+    parser.add_argument('--save-image', type=str, default=None, help='Image output path/filename')
+    parser.add_argument('--elevation-dir', type=str, default='data', help='Directory path to find elevation .hgt files')
+    parser.add_argument('--geojson', type=str, required=True, help='Path for buildings GeoJSON')
 
-    proj = Proj(init='epsg:3006')
+    args = parser.parse_args()
 
-    elev = SrtmHeightMap(lat, lng, resolution, size, proj, 'data')
-    with open('data/gbg.geojson', 'r') as f:
+    lat = float(args.center[0])
+    lng = float(args.center[1])
+    resolution = float(args.resolution)
+    size = int(args.size)
+
+    proj = Proj(init=args.projection)
+
+    elev = SrtmHeightMap(lat, lng, resolution, size, proj, args.elevation_dir)
+    with open(args.geojson, 'r') as f:
         buildings = OSMHeightMap(lat, lng, resolution, size, proj, f)
 
     hm = HeightMap(lat, lng, resolution, size, proj)
     hm.heights = elev.heights + buildings.heights
 
-    hm.to_image().save('a.png')
-    with open('a.pickle', 'wb') as f:
-        hm.save(f)
+    if args.save_image:
+        hm.to_image().save(args.save_image)
+
+    if args.output:
+        with open(args.output, 'wb') as f:
+            hm.save(f)
