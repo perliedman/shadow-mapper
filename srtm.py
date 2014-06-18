@@ -361,7 +361,9 @@ class SRTMTile:
         #        value00, value10, value1, value01, value11, value2, value)
         return value
 
-class VFPTile(SRTMTile):
+class VTPTile(SRTMTile):
+    """As SRTMTile, but for the file format used by
+    http://vterrain.org/Elevation/global.html"""
     def __init__(self, f, lat, lon):
         self.lat = lat
         self.lon = lon

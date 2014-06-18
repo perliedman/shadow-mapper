@@ -2,6 +2,9 @@
 #include <Python.h>
 #include <numpy/arrayobject.h>
 
+/*  Helper functions adapted from
+    http://wiki.scipy.org/Cookbook/C_Extensions/NumPy_arrays */
+
 static int is_floatmatrix(PyArrayObject *mat) {
     if (PyArray_TYPE(mat) != NPY_DOUBLE || PyArray_NDIM(mat) != 2)  {
         printf("%d\n", PyArray_TYPE(mat));
@@ -71,6 +74,8 @@ static PyObject *shadowmap_calculate(PyObject *self, PyObject *args) {
             z = heightmap[i][j] + view_alt;
             lit = 1;
 
+            // TODO: should also include  z exceeding heightmap's max value
+            // as an exit condition as an optimization
             while (x >= 0 && x < dims[0] && y >= 0 && y < dims[1]) {
                 if (z < heightmap[(int)y][(int)x]) {
                     lit = 0;
@@ -80,8 +85,6 @@ static PyObject *shadowmap_calculate(PyObject *self, PyObject *args) {
                 y += sun_y;
                 z += sun_z;
             }
-
-            //printf("%d,%d is %s\n", i, j, lit ? "lit" : "shadowed");
 
             shadowmap[i][j] = lit;
         }

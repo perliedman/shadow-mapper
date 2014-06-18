@@ -2,7 +2,7 @@
 from os import path
 from pyproj import Proj
 import numpy
-from srtm import VFPTile
+from srtm import VTPTile
 from PIL import Image, ImageDraw
 import json
 import pickle
@@ -97,7 +97,7 @@ class SrtmHeightMap(HeightMap):
     def _loadTile(data_dir, lat, lng):
         p = path.join(data_dir, SrtmHeightMap._tileKey(lat, lng))
         with open(p, 'rb') as f:
-            return VFPTile(f, int(lat), int(lng))
+            return VTPTile(f, int(lat), int(lng))
 
 if __name__ == '__main__':
     from sys import argv
