@@ -4,7 +4,7 @@ from sys import argv
 from datetime import datetime, timedelta
 from heightmap import HeightMap
 from suncalc import solar_position
-from sunmap import SunMap, get_projection_north_deviation
+from shadowmap import ShadowMap, get_projection_north_deviation
 from math import sin, cos
 from os import path
 from PIL import Image, ImageChops, ImageDraw
@@ -30,7 +30,7 @@ while t <= t2:
     sun_y = -cos(sunpos['azimuth'] - dev) * cos(sunpos['altitude'])
     sun_z = sin(sunpos['altitude'])
 
-    sm = SunMap(hm.lat, hm.lng, hm.resolution, hm.size, hm.proj, sun_x, sun_y, sun_z, hm, 1.5)
+    sm = ShadowMap(hm.lat, hm.lng, hm.resolution, hm.size, hm.proj, sun_x, sun_y, sun_z, hm, 1.5)
     img = sm.to_image()
 
     if bkg:

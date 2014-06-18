@@ -4,14 +4,14 @@ from PIL import Image
 import numpy
 from math import sqrt, atan2
 from sys import stdout
-import shadowmap
+import c_shadowmap
 
 def update_progress(progress):
     progress = int(progress * 100)
     print '\r[{0:<10}] {1}%'.format('='*(progress/10), progress),
     stdout.flush()
 
-class SunMap(Map):
+class ShadowMap(Map):
     def __init__(self, lat, lng, resolution, size, proj, sun_x, sun_y, sun_z, heightmap, view_alt):
         Map.__init__(self, lat, lng, resolution, size, proj)
         self.sun_x = sun_x
@@ -23,7 +23,7 @@ class SunMap(Map):
         self.min_height = numpy.amin(self.heightmap.heights)
 
     def render(self):
-        return shadowmap.calculate(self.heightmap.heights, self.sun_x, self.sun_y, self.sun_z, self.view_alt, self.max_height)
+        return c_shadowmap.calculate(self.heightmap.heights, self.sun_x, self.sun_y, self.sun_z, self.view_alt, self.max_height)
 
     def to_image(self):
         data = self.render()
@@ -97,5 +97,5 @@ if __name__ == '__main__':
     sun_y = -cos(sunpos['azimuth'] - dev) * cos(sunpos['altitude'])
     sun_z = sin(sunpos['altitude'])
 
-    sm = SunMap(hm.lat, hm.lng, hm.resolution, hm.size, hm.proj, sun_x, sun_y, sun_z, hm, 1.5)
+    sm = ShadowMap(hm.lat, hm.lng, hm.resolution, hm.size, hm.proj, sun_x, sun_y, sun_z, hm, 1.5)
     sm.to_image().save(argv[3])
