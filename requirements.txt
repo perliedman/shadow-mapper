@@ -1,0 +1,5 @@
+Pillow==2.4.0
+argparse==1.2.1
+numpy==1.8.1
+pyproj==1.9.3
+wsgiref==0.1.2
