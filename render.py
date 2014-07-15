@@ -1,6 +1,5 @@
 #!/usr/bin/python
 
-from sys import argv
 from datetime import datetime, timedelta
 from heightmap import HeightMap
 from suncalc import solar_position
@@ -8,18 +7,30 @@ from shadowmap import ShadowMap, get_projection_north_deviation
 from math import sin, cos
 from os import path
 from PIL import Image, ImageChops, ImageDraw
+import argparse
 
-with open(argv[1], 'rb') as f:
+parser = argparse.ArgumentParser()
+parser.add_argument('heightmap', type=str, help='Path to heightmap file')
+parser.add_argument('start', type=str, help='Start date and time (YYYY-MM-DD HH:MM)')
+parser.add_argument('end', type=str, help='End date and time (YYYY-MM-DD HH:MM)')
+parser.add_argument('interval', type=int, help='Interval between images in minutes')
+parser.add_argument('output_directory', type=str, help='Path to store images in')
+parser.add_argument('--background-map', type=str, default=None, help='Path to background map image')
+parser.add_argument('--opacity', type=float, default=1, help='Opacity for shadow when overlaid (0-1)')
+
+args = parser.parse_args()
+
+with open(args.heightmap, 'rb') as f:
     hm = HeightMap.load(f)
 
-t1 = datetime.strptime(argv[2], '%Y-%m-%d %H:%M')
-t2 = datetime.strptime(argv[3], '%Y-%m-%d %H:%M')
-delta = timedelta(minutes=int(argv[4]))
+t1 = datetime.strptime(args.start, '%Y-%m-%d %H:%M')
+t2 = datetime.strptime(args.end, '%Y-%m-%d %H:%M')
+delta = timedelta(minutes=args.interval)
 
 bkg = None
-if len(argv) > 6:
-    bkg = Image.open(argv[6]).convert('RGB')
-    transparency = int(255 - float(argv[7]) * 255)
+if args.background_map:
+    bkg = Image.open(args.background_map).convert('RGB')
+    transparency = int(255 - args.opacity * 255)
 
 t = t1
 while t <= t2:
@@ -43,7 +54,7 @@ while t <= t2:
     txtsize = draw.textsize(text)
     draw.text((hm.size - txtsize[0] - 5, hm.size - txtsize[1] - 5), text, (0,0,0))
 
-    img.save(path.join(argv[5], t.strftime('%Y-%m-%d_%H%M.png')))
+    img.save(path.join(args.output_directory, t.strftime('%Y-%m-%d_%H%M.png')))
 
     t += delta
     print
