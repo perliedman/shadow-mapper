@@ -32,9 +32,9 @@ while t <= t2:
 
     sm = ShadowMap(hm.lat, hm.lng, hm.resolution, hm.size, hm.proj, sun_x, sun_y, sun_z, hm, 1.5)
     img = sm.to_image()
+    img = img.convert('RGB')
 
     if bkg:
-        img = img.convert('RGB')
         img = Image.eval(img, lambda x: x + transparency)
         img = ImageChops.multiply(img, bkg)
 
