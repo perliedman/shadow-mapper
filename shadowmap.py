@@ -4,7 +4,12 @@ from PIL import Image
 import numpy
 from math import sqrt, atan2
 from sys import stdout
-import c_shadowmap
+
+try:
+    import c_shadowmap
+    use_native = True
+except ImportError:
+    use_native = False
 
 def update_progress(progress):
     progress = int(progress * 100)
@@ -23,7 +28,15 @@ class ShadowMap(Map):
         self.min_height = numpy.amin(self.heightmap.heights)
 
     def render(self):
-        return c_shadowmap.calculate(self.heightmap.heights, self.sun_x, self.sun_y, self.sun_z, self.view_alt, self.max_height)
+        if use_native:
+            return c_shadowmap.calculate(self.heightmap.heights, self.sun_x, self.sun_y, self.sun_z, self.view_alt, self.max_height)
+        else:
+            shadowmap = numpy.zeros((self.size, self.size), dtype=int)
+            for y in xrange(0, self.size):
+                for x in xrange(0, self.size):
+                    shadowmap[(y, x)] = 1 if self.is_lit(x, y) else 0
+
+            return shadowmap
 
     def to_image(self):
         data = self.render()
@@ -64,7 +77,7 @@ class ShadowMap(Map):
                 (not steep and self.heightmap.heights[y, x] > z):
                 return False
 
-            error = error + delt, self.max_heightay
+            error = error + deltay
             if error > 0:
                 y = y + ystep
                 error = error - deltax
