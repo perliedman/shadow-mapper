@@ -37,7 +37,7 @@ This script can be used for rendering height maps, both as images as well as [pi
 Before running you need:
 
 * Elevation data from [Virtual Terrain Project](http://vterrain.org/Elevation/global.html), unzipped as .hgt files
-* Building data from [OpenStreetMap](http://openstreetmap.org/) in GeoJSON format. It can for example be obtained using [overpass turbo](http://overpass-turbo.eu/); I also plan to give an automatic tool to download this
+* Building data from [OpenStreetMap](http://openstreetmap.org/) in GeoJSON format. It can for example be obtained using [overpass turbo](http://overpass-turbo.eu/); you can for example use my tool [query-overpass](https://www.npmjs.org/package/query-overpass) to do this
 * Latitude and longitude for the center of the map you want to render
 * The resolution you want to use, in meters per pixel; 4 to 8 meters per pixel might be a good start.
 * The size of the map to render, in pixels
