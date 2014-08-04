@@ -48,6 +48,8 @@ Example usage:
 python heightmap.py --projection epsg:3006 --elevation-dir data/ --geojson my_buildings.geojson --output my.heightmap --save-image my.png 57.7 11.96 8 512
 ```
 
+If you don't know which elevation tile you need, you will get an error about missing tile with name x when you run heightmap.py with your parameters.
+
 Also try
 
 ```sh
@@ -64,7 +66,7 @@ Render a set of shadow maps from a previously generated height map.
 python render.py my.heightmap "2014-06-25 00:00" "2014-06-26 00:00" 60 rendered
 ```
 
-Input is the name of the height map file, two dates and times to render images between, as well as the number of minutes to step between each image. Finally, the path to store the rendered images in.
+Input is the name of the height map file, two dates and times in UTC to render images between, as well as the number of minutes to step between each image. Finally, the path to store the rendered images in.
 
 Optionally, you can provide a background image; the shadowmap will be overlayed with the provided opacity:
 
